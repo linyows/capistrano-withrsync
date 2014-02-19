@@ -56,11 +56,11 @@ Configuration
 
 Set capistrano variables with `set name, value`.
 
-Name          | Default | Description
-------------- |-------- |------------
-rsync_stage   | `tmp/deploy` | Path where to clone your repository for staging, checkouting and rsyncing. Can be both relative or absolute.
-rsync_cache   | `shared/deploy` | Path where to cache your repository on the server to avoid rsyncing from scratch each time. Can be both relative or absolute.<br> Set to `nil` if you want to disable the cache.
-rsync_options | `%w(--recursive --delete --delete-excluded --exclude .git* --exclude .svn*)` | Array of options to pass to `rsync`.  
+name          | default                                                                      | description
+------------- | --------                                                                     | ------------
+rsync_src     | `tmp/deploy`                                                                 | rsync src path
+rsync_dest    | `shared/deploy`                                                              | rsync dest path
+rsync_options | `%w(--recursive --delete --delete-excluded --exclude .git* --exclude .svn*)` | rsync options
 
 Contributing
 ------------

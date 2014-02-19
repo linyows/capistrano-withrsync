@@ -16,13 +16,13 @@ namespace :rsync do
     --xattrs
   )
 
-  set :rsync_stage, 'tmp/deploy'
-  set :rsync_cache, 'shared/deploy'
+  set :rsync_src, 'tmp/deploy'
+  set :rsync_dest, 'shared/deploy'
 
-  set :rsync_cache_path, -> {
-    cache = fetch(:rsync_cache)
-    cache = "#{deploy_to}/#{cache}" if cache && cache !~ /^\//
-    cache
+  set :rsync_dest_fullpath, -> {
+    path = fetch(:rsync_dest)
+    path = "#{deploy_to}/#{path}" if path && path !~ /^\//
+    path
   }
 
   desc 'Override scm tasks'
@@ -50,24 +50,24 @@ namespace :rsync do
   desc 'Create a destination for rsync on deployment hosts'
   task :create_dest do
     on release_roles :all do
-      path = File.join fetch(:deploy_to), fetch(:rsync_cache)
+      path = File.join fetch(:deploy_to), fetch(:rsync_dest)
       execute :mkdir, '-pv', path
     end
   end
 
   desc 'Create a source for rsync'
   task :create_src do
-    next if File.directory? fetch(:rsync_stage)
+    next if File.directory? fetch(:rsync_src)
 
     run_locally do
-      execute :git, :clone, fetch(:repo_url), fetch(:rsync_stage)
+      execute :git, :clone, fetch(:repo_url), fetch(:rsync_src)
     end
   end
 
   desc 'Stage the repository in a local directory'
   task stage: :'rsync:create_src' do
     run_locally do
-      within fetch(:rsync_stage) do
+      within fetch(:rsync_src) do
         execute :git, :fetch, '--quiet --all --prune'
         execute :git, :reset, "--hard origin/#{fetch(:branch)}"
         set :current_revision, "#{`git rev-parse --short HEAD`}".chomp
@@ -82,8 +82,8 @@ namespace :rsync do
       run_locally do
         user = "#{role.user}@" if !role.user.nil?
         rsync_options = "#{fetch(:rsync_options).join(' ')}"
-        rsync_from = "#{fetch(:rsync_stage)}/"
-        rsync_to = "#{user}#{role.hostname}:#{fetch(:rsync_cache_path) || release_path}"
+        rsync_from = "#{fetch(:rsync_src)}/"
+        rsync_to = "#{user}#{role.hostname}:#{fetch(:rsync_dest_fullpath) || release_path}"
 
         unless rsync_to == last_rsync_to
           execute :rsync, rsync_options, rsync_from, rsync_to
@@ -95,12 +95,12 @@ namespace :rsync do
 
   desc 'Copy the code to the releases directory'
   task release: :'rsync:sync' do
-    next if !fetch(:rsync_cache)
+    next if !fetch(:rsync_dest)
 
     on release_roles :all do
       execute :rsync,
         "#{fetch(:rsync_copy_options).join(' ')}",
-        "#{fetch(:rsync_cache_path)}/",
+        "#{fetch(:rsync_dest_fullpath)}/",
         "#{release_path}/"
     end
   end
