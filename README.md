@@ -51,21 +51,55 @@ deploy as usual
 $ cap deploy
 ```
 
-Configuration
--------------
+Options
+-------
 
 Set capistrano variables with `set name, value`.
 
-name          | default                                                                      | description
-------------- | --------                                                                     | ------------
-rsync_src     | `tmp/deploy`                                                                 | rsync src path
-rsync_dest    | `shared/deploy`                                                              | rsync dest path
-rsync_options | `%w(--recursive --delete --delete-excluded --exclude .git* --exclude .svn*)` | rsync options
+Name          | Default                                                                    | Description
+    ------------- | --------                                                                   | ------------
+rsync_src     | tmp/deploy                                                                 | rsync src path
+rsync_dest    | shared/deploy                                                              | rsync dest path
+rsync_options | --recursive --delete --delete-excluded <br>--exclude .git* --exclude .svn* | rsync options
+
+Overview
+--------
+
+### local machine
+
+```log
+~/your_project
+.
+|-- app
+|-- config
+|-- lib
+|-- ...
+|-- ...
+`-- tmp
+    `-- deploy (rsync src ==>)
+```
+
+### deployment hosts
+
+```log
+/var/www/your_project
+.
+|-- current -> /var/www/your_project/releases/20140219074628
+|-- releases
+|   |-- 20140219062041
+|   |-- 20140219063022
+|   `-- 20140219074628
+|-- revisions.log
+`-- shared
+    |-- vendor
+    |-- deploy (==> rsync dest)
+    `-- log
+```
 
 Contributing
 ------------
 
-1. Fork it ( http://github.com/<my-github-username>/capistrano-withrsync/fork )
+1. Fork it ( http://github.com/linyows/capistrano-withrsync/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
