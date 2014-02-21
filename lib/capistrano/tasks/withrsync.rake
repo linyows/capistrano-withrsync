@@ -40,6 +40,7 @@ namespace :rsync do
 
   desc 'Check that the repository is reachable'
   task :check do
+    fetch(:branch)
     run_locally do
       exit 1 unless strategy.check
     end
