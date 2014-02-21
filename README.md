@@ -26,13 +26,13 @@ gem 'capistrano-withrsync'
 
 And then execute:
 
-```ruby
+```sh
 $ bundle
 ```
 
 Or install it yourself as:
 
-```ruby
+```sh
 $ gem install capistrano-withrsync
 ```
 
