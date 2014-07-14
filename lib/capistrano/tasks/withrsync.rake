@@ -36,6 +36,11 @@ namespace :rsync do
     Rake::Task.define_task(:"#{scm}:create_release") do
       invoke :'rsync:release'
     end
+
+    Rake::Task[:"#{scm}:set_current_revision"].delete
+    Rake::Task.define_task(:"#{scm}:set_current_revision") do
+      invoke :'rsync:set_current_revision'
+    end
   end
 
   desc 'Check that the repository is reachable'
@@ -71,7 +76,6 @@ namespace :rsync do
       within fetch(:rsync_src) do
         execute :git, :fetch, '--quiet --all --prune'
         execute :git, :reset, "--hard origin/#{fetch(:branch)}"
-        set :current_revision, "#{`git rev-parse --short HEAD`}".chomp
       end
     end
   end
@@ -108,5 +112,15 @@ namespace :rsync do
 
   task :create_release do
     invoke :'rsync:release'
+  end
+
+  desc 'Set the current revision'
+  task :set_current_revision do
+    run_locally do
+      within fetch(:rsync_src) do
+        rev = capture(:git, 'rev-parse', '--short', 'HEAD')
+        set :current_revision, rev
+      end
+    end
   end
 end
