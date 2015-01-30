@@ -84,7 +84,7 @@ namespace :rsync do
   task sync: :'rsync:stage' do
     last_rsync_to = nil
     release_roles(:all).each do |role|
-      unless Capistrano::Configuration.env.filter(role).empty?
+      unless Capistrano::Configuration.env.filter(role).roles_array.empty?
         run_locally do
           user = "#{role.user}@" if !role.user.nil?
           rsync_options = "#{fetch(:rsync_options).join(' ')}"
