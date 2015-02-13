@@ -25,6 +25,8 @@ namespace :rsync do
     path
   }
 
+  set :rsync_with_submodules, false
+
   desc 'Override scm tasks'
   task :override_scm do
     Rake::Task[:"#{scm}:check"].delete
@@ -66,7 +68,7 @@ namespace :rsync do
     next if File.directory? fetch(:rsync_src)
 
     run_locally do
-      execute :git, :clone, fetch(:repo_url), fetch(:rsync_src)
+      execute :git, :clone, ('--recursive' if fetch(:rsync_with_submodules)), fetch(:repo_url), fetch(:rsync_src)
     end
   end
 
@@ -74,8 +76,9 @@ namespace :rsync do
   task stage: :'rsync:create_src' do
     run_locally do
       within fetch(:rsync_src) do
-        execute :git, :fetch, '--quiet --all --prune'
+        execute :git, :fetch, ('--recurse-submodules=on-demand' if fetch(:rsync_with_submodules)), '--quiet --all --prune'
         execute :git, :reset, "--hard origin/#{fetch(:branch)}"
+        execute :git, :submodule, :update, '--init' if fetch(:rsync_with_submodules)
       end
     end
   end
