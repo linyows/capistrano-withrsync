@@ -61,6 +61,7 @@ Name          | Default                                                         
 rsync_src     | tmp/deploy                                                                 | rsync src path
 rsync_dest    | shared/deploy                                                              | rsync dest path
 rsync_options | --recursive --delete --delete-excluded <br>--exclude .git* --exclude .svn* | rsync options
+rsync_with_submodules | false                                                              | fetch and update git submodules for syncing
 
 Overview
 --------
