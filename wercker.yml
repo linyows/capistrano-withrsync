@@ -12,6 +12,11 @@ build:
         - script:
             name: chmod private key
             code: chmod 600 ./spec/tid/id_rsa
+        - script:
+            name: create ssh config
+            code: |
+              echo "Host *" >> ~/.ssh/config
+              echo " StrictHostKeyChecking no" >> ~/.ssh/config
         - bundle-install
         - script:
              name: rspec
