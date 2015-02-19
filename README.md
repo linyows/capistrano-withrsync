@@ -4,11 +4,11 @@ Capistrano with Rsync
 Capistrano with rsync to deployment hosts from local repository.
 
 [![Gem version](https://img.shields.io/gem/v/capistrano-withrsync.svg?style=flat-square)][gem]
-[![Wercker](https://img.shields.io/wercker/ci/54330318b4ce963d50020750.svg=flat-square)][wercker]
+[![Wercker](https://img.shields.io/wercker/ci/195d63561202a1415822a18e0fd35994.svg=flat-square)][wercker]
 
 [capistrano]: https://github.com/capistrano/capistrano
 [gem]: https://rubygems.org/gems/capistrano-withrsync
-[wercker]: https://app.wercker.com/project/bykey/54e13fa93e143292231f6e0a
+[wercker]: https://app.wercker.com/project/bykey/195d63561202a1415822a18e0fd35994
 
 Requirements
 ------------
