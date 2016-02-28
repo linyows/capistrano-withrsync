@@ -1,8 +1,8 @@
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in capistrano-withrsync.gemspec
 gemspec
 
-gem 'pry'
-gem 'rspec'
-gem 'tid'
+group :test do
+  gem 'rspec'
+  gem 'pry'
+end
