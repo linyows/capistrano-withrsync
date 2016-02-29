@@ -1,23 +1,14 @@
-box: wercker-labs/docker
+box: wercker/rvm
 build:
     steps:
-        - install-packages:
-            packages: build-essential ruby2.0 ruby2.0-dev bundler
-        - script:
-            name: install latest docker
-            code: |
-              docker version
-              curl -s http://get.docker.io/ubuntu/ | sudo sh
-              docker version
-        - script:
-            name: chmod private key
-            code: chmod 600 ./spec/tid/id_rsa
-        - script:
-            name: create ssh config
-            code: |
-              echo "Host *" >> ~/.ssh/config
-              echo " StrictHostKeyChecking no" >> ~/.ssh/config
+        - rvm-use:
+             version: ruby-2.3.0
         - bundle-install
         - script:
              name: rspec
              code: bundle exec rspec
+
+    after-steps:
+        - linyows/slack_notification:
+            token: $SLACK_TOKEN
+            channel: C02FCHEQH
