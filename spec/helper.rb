@@ -1,14 +1,22 @@
 require 'capistrano/all'
 require 'rspec'
 
-def run_task(name = nil, *args)
-  name = if name
-           "#{self.class.top_level_description}:#{name}"
-         else
-           "#{self.class.top_level_description}"
-         end
+load 'capistrano/setup.rb'
 
-  Rake::Task.define_task(:environment)
-  Rake::Task[name].reenable
-  Rake::Task[name].invoke(*args)
+def quietly
+  silence_stream(STDOUT) do
+    silence_stream(STDERR) do
+      yield
+    end
+  end
+end
+
+def silence_stream(stream)
+  old_stream = stream.dup
+  stream.reopen(RbConfig::CONFIG['host_os'] =~ /mswin|mingw/ ? 'NUL:' : '/dev/null')
+  stream.sync = true
+  yield
+ensure
+  stream.reopen(old_stream)
+  old_stream.close
 end
