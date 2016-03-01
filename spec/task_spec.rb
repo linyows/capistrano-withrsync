@@ -5,18 +5,25 @@ describe 'task' do
   before do
     Rake.application.rake_require 'capistrano/tasks/deploy'
     Rake.application.rake_require 'capistrano/tasks/git'
+    Rake.application.rake_require 'capistrano/tasks/framework'
     Rake.application.rake_require 'capistrano/tasks/withrsync'
 
     server 'example1.com', user: user, roles: %w(web)
     server 'example2.com', user: user, roles: %w(app web)
     server 'example3.com', user: user, roles: %w(db), no_release: true
 
+    set :application, 'my_app_name'
     set :repo_url, 'https://github.com/linyows/capistrano-withrsync.git'
+    set :branch, 'master'
     set :deploy_to, Pathname.new('/var/www/app')
+    set :scm, :git
     set :shared_path, deploy_to.join('shared')
     set :current_path, deploy_to.join('current')
     set :releases_path, deploy_to.join('releases')
     set :release_path, releases_path.join(Time.now.utc.strftime "%Y%m%d%H%M%S")
+    set :rsync_with_submodules, submodule
+    set :format_options, log_file: nil
+    set :stage, 'test'
   end
 
   shared_context :create_src do
