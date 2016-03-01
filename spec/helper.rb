@@ -3,6 +3,13 @@ require 'rspec'
 
 load 'capistrano/setup.rb'
 
+def run_task(name, *args)
+  quietly do
+    Rake::Task[name].reenable
+    Rake::Task[name].invoke(*args)
+  end
+end
+
 def quietly
   silence_stream(STDOUT) do
     silence_stream(STDERR) do
