@@ -1,6 +1,7 @@
 describe 'task' do
   let(:user) { 'deploy' }
   let(:escaped_user) { 'deploy' }
+  let(:submodule) { false }
 
   before do
     Rake.application.rake_require 'capistrano/tasks/deploy'
@@ -45,7 +46,16 @@ describe 'task' do
       allow_any_instance_of(SSHKit::Backend::Local).to receive(:execute).
         with(:git, :fetch, nil, '--quiet --all --prune')
       allow_any_instance_of(SSHKit::Backend::Local).to receive(:execute).
-        with(:git, :reset, '--hard origin/')
+        with(:git, :reset, '--hard origin/master')
+    end
+  end
+
+  shared_context :stage_with_submodule do
+    before do
+      allow_any_instance_of(SSHKit::Backend::Local).to receive(:execute).
+        with(:git, :fetch, '--recurse-submodules=on-demand', '--quiet --all --prune')
+      allow_any_instance_of(SSHKit::Backend::Local).to receive(:execute).
+        with(:git, :submodule, :update, '--init')
     end
   end
 
@@ -60,6 +70,40 @@ describe 'task' do
     end
   end
 
+  describe 'attributes' do
+    %i(
+      rsync_options
+      rsync_copy_options
+      rsync_src
+      rsync_dest
+      rsync_dest_fullpath
+      rsync_with_submodules
+    ).each do |k|
+      it "contain #{k}" do
+        expect(env.keys).to include k
+      end
+    end
+  end
+
+  describe 'stage' do
+    include_context :create_src
+    include_context :check_dir
+    include_context :stage
+
+    it 'sets up repository on local' do
+      run_task :'rsync:stage'
+    end
+
+    context 'uses git submodule' do
+      let(:submodule) { true }
+      include_context :stage_with_submodule
+
+      it 'supports submodule' do
+        run_task :'rsync:stage'
+      end
+    end
+  end
+
   describe 'sync' do
     include_context :create_src
     include_context :check_dir
@@ -67,15 +111,15 @@ describe 'task' do
     include_context :sync
 
     it 'synchronizes to remote from local' do
-      quietly { invoke :'rsync:sync' }
+      run_task :'rsync:sync'
     end
 
     context 'includes space in username' do
       let(:user) { 'deploy user' }
-      let(:escaped_user) { "deploy\ user" }
+      let(:escaped_user) { "deploy\\ user" }
 
       it 'escapes username' do
-        quietly { invoke :'rsync:sync' }
+        run_task :'rsync:sync'
       end
     end
   end
@@ -91,7 +135,7 @@ describe 'task' do
         with(:rsync, '--archive --acls --xattrs',
           "#{fetch(:shared_path).join('deploy')}/", "#{fetch :release_path}/")
 
-      quietly { invoke :'rsync:release' }
+      run_task :'rsync:release'
     end
   end
 end
