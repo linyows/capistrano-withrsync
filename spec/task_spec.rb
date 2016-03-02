@@ -9,6 +9,10 @@ describe 'task' do
     Rake.application.rake_require 'capistrano/tasks/framework'
     Rake.application.rake_require 'capistrano/tasks/withrsync'
 
+    # for capistrano v3.2
+    servers = Capistrano::Configuration.env.send(:servers)
+    servers.send(:servers).clear unless servers.to_a.length.zero?
+
     server 'example1.com', user: user, roles: %w(web)
     server 'example2.com', user: user, roles: %w(app web)
     server 'example3.com', user: user, roles: %w(db), no_release: true
@@ -119,6 +123,17 @@ describe 'task' do
       let(:escaped_user) { "deploy\\ user" }
 
       it 'escapes username' do
+        run_task :'rsync:sync'
+      end
+    end
+
+    context 'excludes no-role hosts' do
+      before do
+        server 'example4.com', user: user, roles: %w()
+        server 'example5.com', user: user
+      end
+
+      it 'contains no-role hosts' do
         run_task :'rsync:sync'
       end
     end

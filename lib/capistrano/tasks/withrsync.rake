@@ -85,21 +85,14 @@ namespace :rsync do
 
   desc 'Sync to deployment hosts from local'
   task sync: :'rsync:stage' do
-    last_rsync_to = nil
-    release_roles(:all).each do |role|
-      unless Capistrano::Configuration.env.filter(role).roles_array.empty?
-        run_locally do
-          user = "#{role.user}@" if !role.user.nil?
-          rsync_options = "#{fetch(:rsync_options).join(' ')}"
-          rsync_from = "#{fetch(:rsync_src)}/"
-          rsync_to = Shellwords.escape("#{user}#{role.hostname}:#{fetch(:rsync_dest_fullpath) || release_path}")
-
-          unless rsync_to == last_rsync_to
-            execute :rsync, rsync_options, rsync_from, rsync_to
-            last_rsync_to = rsync_to
-          end
-        end
-      end
+    release_roles(:all).each do |server|
+      run_locally do
+        user = "#{server.user}@" if !server.user.nil?
+        rsync_options = "#{fetch(:rsync_options).join(' ')}"
+        rsync_from = "#{fetch(:rsync_src)}/"
+        rsync_to = Shellwords.escape("#{user}#{server.hostname}:#{fetch(:rsync_dest_fullpath) || release_path}")
+        execute :rsync, rsync_options, rsync_from, rsync_to
+      end unless server.roles.empty?
     end
   end
 
