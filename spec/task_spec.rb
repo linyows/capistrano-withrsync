@@ -126,6 +126,17 @@ describe 'task' do
         run_task :'rsync:sync'
       end
     end
+
+    context 'excludes no-role hosts' do
+      before do
+        server 'example4.com', user: user, roles: %w()
+        server 'example5.com', user: user
+      end
+
+      it 'contains no-role hosts' do
+        run_task :'rsync:sync'
+      end
+    end
   end
 
   describe 'release' do
