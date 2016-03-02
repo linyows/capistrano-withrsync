@@ -9,6 +9,10 @@ describe 'task' do
     Rake.application.rake_require 'capistrano/tasks/framework'
     Rake.application.rake_require 'capistrano/tasks/withrsync'
 
+    # for capistrano v3.2
+    servers = Capistrano::Configuration.env.send(:servers)
+    servers.send(:servers).clear unless servers.to_a.length.zero?
+
     server 'example1.com', user: user, roles: %w(web)
     server 'example2.com', user: user, roles: %w(app web)
     server 'example3.com', user: user, roles: %w(db), no_release: true
