@@ -85,7 +85,8 @@ namespace :rsync do
 
   desc 'Sync to deployment hosts from local'
   task sync: :'rsync:stage' do
-    release_roles(:all).each do |server|
+    servers = Capistrano::Configuration.env.filter(release_roles(:all))
+    servers.each do |server|
       run_locally do
         user = "#{server.user}@" if !server.user.nil?
         rsync_options = "#{fetch(:rsync_options).join(' ')}"
