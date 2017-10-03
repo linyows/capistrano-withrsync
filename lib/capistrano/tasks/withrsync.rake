@@ -102,9 +102,14 @@ namespace :rsync do
     next if !fetch(:rsync_dest)
 
     on release_roles :all do
+      dest = fetch(:rsync_dest_fullpath)
+      if (tree = fetch(:repo_tree))
+        tree = tree.slice %r#^/?(.*?)/?$#, 1
+        dest = "#{dest}/#{tree}/"
+      end
       execute :rsync,
         "#{fetch(:rsync_copy_options).join(' ')}",
-        "#{fetch(:rsync_dest_fullpath)}/",
+        "#{dest}/",
         "#{release_path}/"
     end
   end
