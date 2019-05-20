@@ -56,11 +56,11 @@ Options
 
 Set capistrano variables with `set name, value`.
 
-Name          | Default                                                                    | Description
-    ------------- | --------                                                                   | ------------
-rsync_src     | tmp/deploy                                                                 | rsync src path
-rsync_dest    | shared/deploy                                                              | rsync dest path
-rsync_options | --recursive --delete --delete-excluded <br>--exclude .git* --exclude .svn* | rsync options
+Name                  | Default                                                                    | Description
+-------------         | --------                                                                   | ------------
+rsync_src             | tmp/deploy                                                                 | rsync src path (it will clone a shallow copy there, make sure you do not need this repo)
+rsync_dest            | shared/deploy                                                              | rsync dest path
+rsync_options         | --recursive --delete --delete-excluded <br>--exclude .git* --exclude .svn* | rsync options
 rsync_with_submodules | false                                                              | fetch and update git submodules for syncing
 
 Overview
