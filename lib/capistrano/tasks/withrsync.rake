@@ -63,17 +63,17 @@ namespace :rsync do
     end
   end
 
-  desc 'Empties the source for rsync'
-  task :empty_src do
+  desc 'Empties the source for rsync to allow a new clone'
+  task :delete_src do
     next unless File.directory? fetch(:rsync_src)
 
     run_locally do
-      execute :rm, '-rf' "#{fetch(:rsync_src)}/*"
+      execute :rm, '-rf', fetch(:rsync_src)
     end
   end
 
   desc 'Clone the repository in a local directory'
-  task stage: :'rsync:empty_src' do
+  task stage: :'rsync:delete_src' do
     run_locally do
       execute :git,
               :clone,
@@ -91,7 +91,7 @@ namespace :rsync do
     servers.each do |server|
       run_locally do
         user = "#{server.user}@" if !server.user.nil?
-        rsync_options = "#{fetch(:rsync_options).join(' ')}"
+        rsync_options = (fetch(:rsync_options).join(' ')).to_s
         rsync_from = "#{fetch(:rsync_src)}/"
         rsync_to = Shellwords.escape("#{user}#{server.hostname}:#{fetch(:rsync_dest_fullpath) || release_path}")
         execute :rsync, rsync_options, rsync_from, rsync_to
@@ -105,7 +105,7 @@ namespace :rsync do
 
     on release_roles :all do
       execute :rsync,
-        "#{fetch(:rsync_copy_options).join(' ')}",
+        (fetch(:rsync_copy_options).join(' ')).to_s,
         "#{fetch(:rsync_dest_fullpath)}/",
         "#{release_path}/"
     end
