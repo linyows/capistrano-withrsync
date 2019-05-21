@@ -63,23 +63,25 @@ namespace :rsync do
     end
   end
 
-  desc 'Create a source for rsync'
-  task :create_src do
-    next if File.directory? fetch(:rsync_src)
+  desc 'Empties the source for rsync to allow a new clone'
+  task :delete_src do
+    next unless File.directory? fetch(:rsync_src)
 
     run_locally do
-      execute :git, :clone, ('--recursive' if fetch(:rsync_with_submodules)), fetch(:repo_url), fetch(:rsync_src)
+      execute :rm, '-rf', fetch(:rsync_src)
     end
   end
 
-  desc 'Stage the repository in a local directory'
-  task stage: :'rsync:create_src' do
+  desc 'Clone the repository in a local directory'
+  task stage: :'rsync:delete_src' do
     run_locally do
-      within fetch(:rsync_src) do
-        execute :git, :fetch, ('--recurse-submodules=on-demand' if fetch(:rsync_with_submodules)), '--quiet --all --prune'
-        execute :git, :reset, "--hard origin/#{fetch(:branch)}"
-        execute :git, :submodule, :update, '--init' if fetch(:rsync_with_submodules)
-      end
+      execute :git,
+              :clone,
+              "--branch #{fetch(:branch)}",
+              '--depth 1',
+              ('--recursive --shallow-submodules' if fetch(:rsync_with_submodules)),
+              fetch(:repo_url),
+              fetch(:rsync_src)
     end
   end
 
@@ -89,7 +91,7 @@ namespace :rsync do
     servers.each do |server|
       run_locally do
         user = "#{server.user}@" if !server.user.nil?
-        rsync_options = "#{fetch(:rsync_options).join(' ')}"
+        rsync_options = (fetch(:rsync_options).join(' ')).to_s
         rsync_from = "#{fetch(:rsync_src)}/"
         rsync_to = Shellwords.escape("#{user}#{server.hostname}:#{fetch(:rsync_dest_fullpath) || release_path}")
         execute :rsync, rsync_options, rsync_from, rsync_to
@@ -103,7 +105,7 @@ namespace :rsync do
 
     on release_roles :all do
       execute :rsync,
-        "#{fetch(:rsync_copy_options).join(' ')}",
+        (fetch(:rsync_copy_options).join(' ')).to_s,
         "#{fetch(:rsync_dest_fullpath)}/",
         "#{release_path}/"
     end

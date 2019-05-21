@@ -31,10 +31,11 @@ describe 'task' do
     set :stage, 'test'
   end
 
-  shared_context :create_src do
+  shared_context :must_delete_src do
     before do
+
       allow_any_instance_of(SSHKit::Backend::Local).to receive(:execute).
-        with(:git, :clone, nil, fetch(:repo_url), fetch(:rsync_src))
+        with(:rm, '-rf', fetch(:rsync_src))
     end
   end
 
@@ -48,18 +49,14 @@ describe 'task' do
   shared_context :stage do
     before do
       allow_any_instance_of(SSHKit::Backend::Local).to receive(:execute).
-        with(:git, :fetch, nil, '--quiet --all --prune')
-      allow_any_instance_of(SSHKit::Backend::Local).to receive(:execute).
-        with(:git, :reset, '--hard origin/master')
+        with(:git, :clone, '--branch master', '--depth 1', nil, fetch(:repo_url), fetch(:rsync_src))
     end
   end
 
   shared_context :stage_with_submodule do
     before do
       allow_any_instance_of(SSHKit::Backend::Local).to receive(:execute).
-        with(:git, :fetch, '--recurse-submodules=on-demand', '--quiet --all --prune')
-      allow_any_instance_of(SSHKit::Backend::Local).to receive(:execute).
-        with(:git, :submodule, :update, '--init')
+        with(:git, :clone, '--branch master', '--depth 1', '--recursive --shallow-submodules', fetch(:repo_url), fetch(:rsync_src))
     end
   end
 
@@ -89,9 +86,17 @@ describe 'task' do
     end
   end
 
+  context 'on subsequent deploys' do
+    include_context :stage
+    include_context :must_delete_src
+
+    it 'should empty folder' do
+      expect(File).to receive(:directory?).with("#{fetch(:rsync_src)}").and_return(true)
+      run_task :'rsync:stage'
+    end
+  end
+
   describe 'stage' do
-    include_context :create_src
-    include_context :check_dir
     include_context :stage
 
     it 'sets up repository on local' do
@@ -109,7 +114,6 @@ describe 'task' do
   end
 
   describe 'sync' do
-    include_context :create_src
     include_context :check_dir
     include_context :stage
     include_context :sync
@@ -140,7 +144,6 @@ describe 'task' do
   end
 
   describe 'release' do
-    include_context :create_src
     include_context :check_dir
     include_context :stage
     include_context :sync
